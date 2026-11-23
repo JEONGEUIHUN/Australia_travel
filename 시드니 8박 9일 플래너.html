@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시드니 8박 9일 플래너</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: sticky trip summary on top, 9-day overview strip, day cards in a responsive grid, candidates pool below. */
+:root{
+  --bg:#eef3f4;
+  --surface:#ffffff;
+  --ink:#14283a;
+  --muted:#5b6f7d;
+  --line:#d6e0e4;
+  --sea:#0d6b7c;
+  --sea-soft:#dcf0f2;
+  --sun:#e0562b;
+  --sun-soft:#fde6dc;
+  --ok:#2f7d4f;
+  --font-display:"Noto Serif KR","Batang",serif;
+  --font-body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1a22;--surface:#17252f;--ink:#e6eef2;--muted:#93a8b5;--line:#2a3d4a;
+    --sea:#4fc0d2;--sea-soft:#17394080;--sun:#ff8a62;--sun-soft:#4a2a1e;--ok:#6cc58e;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1a22;--surface:#17252f;--ink:#e6eef2;--muted:#93a8b5;--line:#2a3d4a;
+  --sea:#4fc0d2;--sea-soft:#17394080;--sun:#ff8a62;--sun-soft:#4a2a1e;--ok:#6cc58e;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+h1,h2,h3{margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select{font:inherit;color:var(--ink)}
+:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
+
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+
+/* top summary */
+.top{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding-top:10px;padding-bottom:10px}
+.brand{display:flex;flex-direction:column;min-width:150px}
+.brand b{font-family:var(--font-display);font-size:18px;line-height:1.2}
+.brand span{font-size:12px;color:var(--muted)}
+.stats{display:flex;flex-wrap:wrap;gap:6px 22px;flex:1;align-items:center}
+.stat{display:flex;flex-direction:column;min-width:72px}
+.stat small{font-size:11px;color:var(--muted)}
+.stat strong{font-size:17px;font-variant-numeric:tabular-nums;line-height:1.25}
+.bar{flex:1 1 140px;min-width:120px}
+.bar small{font-size:11px;color:var(--muted)}
+.track{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:4px}
+.fill{height:100%;width:0;background:var(--sea);border-radius:99px;transition:width .25s}
+.rate{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.rate input{width:68px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);text-align:right}
+
+/* hero */
+.hero{padding:22px 0 8px}
+.hero h1{font-family:var(--font-display);font-size:clamp(24px,4vw,34px);line-height:1.25}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:68ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--sea-soft);color:var(--sea);font-weight:500}
+.chip.sun{background:var(--sun-soft);color:var(--sun)}
+
+/* overview strip */
+.strip{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:8px;margin:14px 0 4px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile:hover{border-color:var(--sea)}
+.tile .d{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.tile .t{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .m{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tile.done{border-color:var(--ok)}
+.tile.done .d::after{content:" ✓";color:var(--ok)}
+@media (max-width:900px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+h2.sec{font-family:var(--font-display);font-size:20px;margin:28px 0 12px}
+
+/* day cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-width:0;scroll-margin-top:90px}
+.card-h{padding:12px 14px 8px;border-bottom:1px solid var(--line)}
+.card-h .row1{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card-h .day{font-size:12px;font-weight:700;color:var(--sun);letter-spacing:.02em}
+.card-h .sub{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.card-h h3{font-size:17px;line-height:1.3;margin-top:2px}
+.card-h .note{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+.items{list-style:none;margin:0;padding:4px 6px;display:flex;flex-direction:column}
+.it{display:grid;grid-template-columns:auto 1fr auto auto;grid-template-areas:"c n t x" "c d d d";gap:2px 8px;align-items:center;padding:8px 8px;border-radius:8px}
+.it + .it{border-top:1px dashed var(--line)}
+.it .c{grid-area:c;align-self:start;margin-top:3px}
+.it .n{grid-area:n;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.it .d{grid-area:d;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.it .f{grid-area:t;display:flex;gap:6px;align-items:center}
+.it .x{grid-area:x}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--sea);cursor:pointer}
+.in{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:4px 6px;font-size:13px;min-width:0}
+.in.time{width:92px}
+.in.cost{width:78px;text-align:right;font-variant-numeric:tabular-nums}
+.cur{font-size:11px;color:var(--muted)}
+.it.done .n{text-decoration:line-through;color:var(--muted)}
+.it.done{background:color-mix(in srgb,var(--sea-soft) 55%,transparent)}
+.tag{display:inline-block;font-size:10.5px;padding:0 6px;border-radius:99px;margin-right:6px;vertical-align:1px;font-weight:700}
+.tag.mine{background:var(--sea-soft);color:var(--sea)}
+.tag.rec{background:var(--sun-soft);color:var(--sun)}
+.del{border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;padding:2px 6px;border-radius:6px}
+.del:hover{color:var(--sun);background:var(--sun-soft)}
+@media (max-width:480px){
+  .it{grid-template-columns:auto 1fr auto;grid-template-areas:"c n x" "c d d" "c t t"}
+  .it .f{margin-top:4px}
+}
+.addrow{display:flex;gap:6px;padding:8px 12px 12px;margin-top:auto}
+.addrow input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 10px;font-size:13px}
+.btn{border:1px solid var(--sea);background:transparent;color:var(--sea);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--sea-soft)}
+.btn.solid{background:var(--sea);color:var(--surface)}
+.btn.warn{border-color:var(--sun);color:var(--sun)}
+
+/* pool */
+.pool{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.pc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.pc h3{font-size:15px;line-height:1.35}
+.pc p{margin:0;font-size:13px;color:var(--muted)}
+.pc .est{font-size:12.5px;font-variant-numeric:tabular-nums}
+.pc .act{display:flex;gap:6px;margin-top:auto;padding-top:6px}
+.pc select{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:5px 8px;font-size:13px}
+.empty{color:var(--muted);font-size:13px;padding:6px 0}
+
+/* notes */
+.notes{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--sun);border-radius:12px;padding:12px 16px 12px 20px}
+.notes ul{margin:6px 0 0;padding-left:18px}
+.notes li{margin:4px 0;font-size:14px}
+.foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:28px 0 40px;color:var(--muted);font-size:12.5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><b>시드니 8박 9일</b><span>12/6(일) – 12/14(월) · 2인</span></div>
+    <div class="stats">
+      <div class="stat"><small>예상 총액</small><strong id="tot">A$ 0</strong></div>
+      <div class="stat"><small>원화 환산</small><strong id="totKrw">₩ 0</strong></div>
+      <div class="stat"><small>체크한 항목 지출</small><strong id="spent">A$ 0</strong></div>
+      <div class="bar"><small id="progTxt">0 / 0 완료</small><div class="track"><div class="fill" id="progFill"></div></div></div>
+      <label class="rate" for="rate">환율 <input id="rate" type="number" min="0" step="1" inputmode="numeric" aria-label="원 per 호주달러"> 원/A$</label>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>시드니 중심, 근교 도시까지 9일</h1>
+    <p>항목을 체크하면 진행률과 지출이 바뀌고, 시간과 금액은 직접 고쳐 쓸 수 있어요. 금액은 2인 합계(A$) 기준이고, 초기 금액은 조사한 1인 요금의 2배 예상치입니다. 입력한 내용은 이 브라우저에 저장돼요.</p>
+    <div class="chips">
+      <span class="chip">시티 · 하버</span>
+      <span class="chip">남쪽 해안 드라이브 (로얄 내셔널파크 · 울런공)</span>
+      <span class="chip">포트스티븐스 1일 투어</span>
+      <span class="chip sun">12월 일몰 약 20시 전후</span>
+    </div>
+    <div class="strip" id="strip" aria-label="일자별 한눈에 보기"></div>
+  </section>
+
+  <h2 class="sec">일자별 일정</h2>
+  <div class="grid" id="days"></div>
+
+  <h2 class="sec">후보 · 추가 추천</h2>
+  <p style="margin:-4px 0 12px;color:var(--muted);font-size:13.5px">날짜를 고르고 '일정에 추가'를 누르면 해당 일자 카드로 들어가요.</p>
+  <div class="pool" id="pool"></div>
+
+  <h2 class="sec">출발 전 확인할 것</h2>
+  <div class="notes">
+    <ul>
+      <li><b>항공 시간:</b> 도착·출발 시각에 따라 Day 1과 Day 9는 조정하세요. 현재는 오후 도착, 당일 출국 기준입니다.</li>
+      <li><b>세자매봉:</b> 세자매봉(Three Sisters)은 블루마운틴 지역에 있어요. 블루마운틴은 제외하셨으니, 가이드 여행사 후보가 어느 곳 투어인지 확인이 필요합니다.</li>
+      <li><b>Day 3 → Day 4:</b> 렌터카 장거리 다음 날 06:45 출발 투어라 피곤할 수 있어요. 부담되면 두 날을 바꾸거나 Day 3을 짧게 잡으세요.</li>
+      <li><b>렌터카:</b> 호주는 좌측통행이에요. 한국 면허증과 국제운전면허증을 준비하고, 운전이 부담되면 Day 3은 1일 투어나 기차(일리와라 라인)로 바꿀 수 있어요.</li>
+      <li><b>일몰:</b> 선셋 일정(크루즈, 시드니대학교)은 일몰 약 20시 기준이에요. 출발 직전에 정확한 시각을 확인하세요.</li>
+      <li><b>입국:</b> 한국 여권은 호주 ETA(전자여행허가)를 출발 전에 받아야 해요. 공식 앱이나 사이트에서 신청하세요.</li>
+      <li><b>요금과 운영시간:</b> 조사 시점 기준 예상치이고 판매처마다 달라요. 예약 전에 공식 페이지를 확인하세요.</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    <span>체크 · 시간 · 금액 · 추가한 항목은 이 기기의 브라우저에만 저장됩니다.</span>
+    <button class="btn warn" id="reset" type="button">처음 상태로 되돌리기</button>
+  </div>
+</main>
+
+<script>
+(function(){
+  var KEY='sydney-trip-2026-v1';
+
+  var SEED={
+    rate:950,
+    uid:1000,
+    days:[
+      {id:'d1',date:'12/6 (일)',title:'도착 · 시티 적응',note:'항공 도착 시각에 맞춰 조정. 무리하지 않고 가볍게.',items:[
+        {id:'i1',name:'입국 · 숙소 체크인',detail:'ETA 승인 확인, 교통카드(Opal) 준비',time:'14:00',cost:null,done:false,tag:''},
+        {id:'i2',name:'서큘러 키 → 오페라하우스 → 하버브리지 산책',detail:'첫날 인증샷 코스, 로열 보타닉 가든 입구까지 걸어서',time:'16:30',cost:null,done:false,tag:'rec'},
+        {id:'i3',name:'로컬 마트 장보기',detail:'Woolworths · Coles 등 숙소 근처 마트에서 식재료 구입',time:'18:30',cost:null,done:false,tag:'mine'}
+      ]},
+      {id:'d2',date:'12/7 (월)',title:'타롱가 · 레고 · 선셋 크루즈',note:'타롱가는 서큘러 키에서 페리 약 12분. 일몰 약 20시이므로 크루즈는 18시경 출발 상품으로.',items:[
+        {id:'i4',name:'타롱가 동물원',detail:'페리 포함 패키지 1인 약 A$75 기준 (입장권만 1인 A$55). 운영시간은 공식 확인',time:'09:30',cost:150,done:false,tag:'mine'},
+        {id:'i5',name:'레고 스토어 · 나만의 미니피규어 만들기',detail:'Pitt St Mall, 월요일 9:30–19:00. 미니피규어 팩토리(6세 이상) 가격은 현장 확인',time:'14:30',cost:null,done:false,tag:'mine'},
+        {id:'i6',name:'선셋 크루즈 투어',detail:'Captain Cook 선셋 디너 크루즈 1인 A$109부터, 최대 2시간. 다른 크루즈로 바꿀 수도 있음',time:'17:45',cost:218,done:false,tag:'mine'}
+      ]},
+      {id:'d3',date:'12/8 (화)',title:'남쪽 해안 드라이브',note:'렌터카 추천. 시티 → 로얄 내셔널파크 → 행글라이더 이륙지 → 울런공, 이동 약 1시간씩.',items:[
+        {id:'i7',name:'렌터카 수령',detail:'국제운전면허증 필수, 좌측통행',time:'07:30',cost:null,done:false,tag:''},
+        {id:'i8',name:'로얄 내셔널파크',detail:'해안 전망과 비치 위주로 가볍게. 공원 차량 입장료는 공식 확인',time:'09:00',cost:null,done:false,tag:'mine'},
+        {id:'i9',name:'Bald Hill 전망대 (행글라이더 이륙지)',detail:'스탠웰 탑스. 활공은 바람이 맞는 날, 주말 오후에 더 흔함. 시 클리프 브리지 전망 포토스팟',time:'12:00',cost:0,done:false,tag:'mine'},
+        {id:'i10',name:'시 클리프 브리지 · 울런공 점심',detail:'바다 위로 뻗은 다리 드라이브 후 울런공에서 점심',time:'13:30',cost:null,done:false,tag:'rec'},
+        {id:'i11',name:'시드니 복귀 · 렌터카 반납',detail:'퇴근 시간 정체 전에 복귀',time:'17:00',cost:null,done:false,tag:''}
+      ]},
+      {id:'d4',date:'12/9 (수)',title:'포트스티븐스 1일 투어',note:'시내 호텔 픽업 후 약 12시간. 일찍 출발하니 전날 일찍 쉬세요.',items:[
+        {id:'i12',name:'포트스티븐스 투어 (돌고래 크루즈 · 샌드보딩 · 4WD)',detail:'1인 약 A$189~199 투어 기준. 코알라 보호구역 포함 상품도 있음, 출발 06:45',time:'06:45',cost:380,done:false,tag:'mine'},
+        {id:'i13',name:'귀가 후 저녁',detail:'피곤하니 숙소 근처에서 간단히, 또는 장 본 재료로 요리',time:'19:30',cost:null,done:false,tag:''}
+      ]},
+      {id:'d5',date:'12/10 (목)',title:'페더데일 쿼카 · 시드니대학교 석양',note:'페더데일은 시내에서 약 45분 거리. 8–17시 운영, 입장 마감 16시.',items:[
+        {id:'i14',name:'페더데일 와일드라이프 파크 (쿼카 · 코알라)',detail:'1인 약 A$30~40 (판매처별 상이). 둘러보는 데 2시간 이상. 기차 + 택시 또는 Uber',time:'09:00',cost:70,done:false,tag:'mine'},
+        {id:'i15',name:'뉴타운 · 글리브 점심과 카페',detail:'대학교 근처 로컬 동네 구경',time:'13:30',cost:null,done:false,tag:'rec'},
+        {id:'i16',name:'시드니대학교 쿼드랭글 석양',detail:'일몰 약 20시, 18:45쯤 도착해 자리 잡기',time:'18:45',cost:0,done:false,tag:'mine'}
+      ]},
+      {id:'d6',date:'12/11 (금)',title:'동부 해안 · 왓슨스 베이',note:'본다이~쿠지 약 6km, 그늘이 적으니 선크림과 물 필수.',items:[
+        {id:'i17',name:'본다이 → 쿠지 해안 산책',detail:'바위 수영장 구경, 2~3시간. 수영복 챙기기',time:'09:00',cost:null,done:false,tag:'rec'},
+        {id:'i18',name:'본다이 비치 점심',detail:'아이스버그 풀 전망',time:'12:30',cost:null,done:false,tag:'rec'},
+        {id:'i19',name:'왓슨스 베이 · 갭 파크',detail:'서큘러 키에서 페리로 이동, 절벽 전망 후 피시앤칩스',time:'15:30',cost:null,done:false,tag:'rec'}
+      ]},
+      {id:'d7',date:'12/12 (토)',title:'오페라하우스 · 보타닉 가든 · 마켓',note:'토요일은 더 록스 마켓이 열려요.',items:[
+        {id:'i20',name:'로열 보타닉 가든 · 미세스 맥쿼리스 체어',detail:'오페라하우스와 하버브리지가 함께 나오는 포토 포인트',time:'09:30',cost:null,done:false,tag:'rec'},
+        {id:'i21',name:'더 록스 마켓과 거리 구경',detail:'기념품과 간식',time:'12:00',cost:null,done:false,tag:'rec'},
+        {id:'i22',name:'달링 하버 · 바랑가루 저녁',detail:'야경 산책',time:'18:00',cost:null,done:false,tag:'rec'}
+      ]},
+      {id:'d8',date:'12/13 (일)',title:'맨리 · 예비일',note:'앞선 날 날씨가 나빠 못 간 곳이 있으면 이 날로 옮기세요.',items:[
+        {id:'i23',name:'맨리 페리 · 맨리 비치 · 쉘리 비치',detail:'서큘러 키에서 페리 약 30분',time:'10:00',cost:null,done:false,tag:'rec'},
+        {id:'i24',name:'마지막 쇼핑 (QVB · 마트 기념품)',detail:'일요일 영업시간 확인',time:'15:00',cost:null,done:false,tag:''},
+        {id:'i25',name:'마지막 저녁',detail:'',time:'18:30',cost:null,done:false,tag:''}
+      ]},
+      {id:'d9',date:'12/14 (월)',title:'귀국',note:'출발 시각에 따라 오전 일정 추가 가능.',items:[
+        {id:'i26',name:'체크아웃 · 짐 정리',detail:'남은 식재료 처리',time:'08:00',cost:null,done:false,tag:''},
+        {id:'i27',name:'공항 이동',detail:'국제선은 출발 3시간 전 도착 목표',time:'',cost:null,done:false,tag:''}
+      ]}
+    ],
+    pool:[
+      {id:'p1',name:'세자매봉 가이드 투어 (여행사 후보)',tag:'mine',note:'세자매봉은 블루마운틴 지역이에요. 제외하신 곳과 겹치는지, 어떤 투어인지 먼저 확인하세요.',cost:null},
+      {id:'p2',name:'행글라이더 탠덤 체험',tag:'rec',note:'Bald Hill에서 출발. 1인 약 A$250~350, 바람 조건이 맞아야 해요. 금액은 2인 중간값.',cost:600},
+      {id:'p3',name:'Figure 8 Pools (로얄 내셔널파크)',tag:'rec',note:'썰물 때만 보이고 미끄러워 사고가 잦아요. 왕복 도보가 길고 힘들어서 물때와 체력을 확인하세요.',cost:null},
+      {id:'p4',name:'키아마 블로홀',tag:'rec',note:'울런공에서 남쪽으로 약 40분. 남쪽 해안 드라이브를 더 길게 잡을 때.',cost:null},
+      {id:'p5',name:'오페라하우스 내부 투어',tag:'rec',note:'외관만 보지 않고 안에 들어가고 싶을 때. 요금과 시간은 공식 예약 페이지 확인.',cost:null},
+      {id:'p6',name:'Twilight at Taronga 콘서트',tag:'rec',note:'동물원 잔디밭에서 하는 여름 야외 콘서트. 티켓 1인 A$79부터, 12월 날짜와 라인업 확인 필요.',cost:158},
+      {id:'p7',name:'시드니 하버 카약 (일출 또는 반일)',tag:'rec',note:'하버에서 일출 패들 세션과 미들 하버 가이드 카약 상품이 있어요. 가격은 상품별 확인.',cost:null},
+      {id:'p8',name:'제르비스 베이 · 하이암스 비치 (1박 추천)',tag:'rec',note:'하얀 모래 해변으로 유명. 시드니에서 차로 약 3시간이라 1박을 권해요. 여유 있을 때만.',cost:null},
+      {id:'p9',name:'헌터밸리 와이너리',tag:'rec',note:'시드니 북쪽 와인 지역. 포트스티븐스와 방향이 비슷해 같은 날 넣기는 어려워요.',cost:null}
+    ]
+  };
+
+  var S=load();
+
+  function clone(o){return JSON.parse(JSON.stringify(o));}
+  function load(){
+    try{var r=localStorage.getItem(KEY); if(r){var p=JSON.parse(r); if(p&&p.days&&p.pool) return p;}}catch(e){}
+    return clone(SEED);
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function num(v){var n=Number(v);return isFinite(n)?n:0;}
+  function fmt(n){return Math.round(n).toLocaleString('ko-KR');}
+  function tagHtml(t){
+    if(t==='mine') return '<span class="tag mine">내 후보</span>';
+    if(t==='rec') return '<span class="tag rec">추천</span>';
+    return '';
+  }
+  function findItem(id){
+    for(var i=0;i<S.days.length;i++){
+      var it=S.days[i].items;
+      for(var j=0;j<it.length;j++){ if(it[j].id===id) return {day:S.days[i],item:it[j],idx:j}; }
+    }
+    return null;
+  }
+
+  function itemHtml(it){
+    return '<li class="it'+(it.done?' done':'')+'" data-row="'+it.id+'">'
+      +'<input class="c" type="checkbox" id="c-'+it.id+'" data-check="'+it.id+'"'+(it.done?' checked':'')+' aria-label="완료 표시">'
+      +'<label class="n" for="c-'+it.id+'">'+tagHtml(it.tag)+esc(it.name)+'</label>'
+      +'<div class="f">'
+        +'<input class="in time" type="time" data-time="'+it.id+'" value="'+esc(it.time)+'" aria-label="시간">'
+        +'<span class="cur">A$</span>'
+        +'<input class="in cost" type="number" min="0" step="1" inputmode="decimal" data-cost="'+it.id+'" value="'+(it.cost==null?'':esc(it.cost))+'" placeholder="금액" aria-label="금액 (2인 합계, 호주달러)">'
+      +'</div>'
+      +'<button class="del x" type="button" data-del="'+it.id+'" aria-label="항목 삭제">×</button>'
+      +(it.detail?'<div class="d">'+esc(it.detail)+'</div>':'')
+      +'</li>';
+  }
+
+  function render(){
+    document.getElementById('rate').value=S.rate;
+
+    var strip='';
+    var days='';
+    S.days.forEach(function(d,i){
+      strip+='<button type="button" class="tile" data-jump="'+d.id+'" id="tile-'+d.id+'">'
+        +'<span class="d">'+esc(d.date)+'</span>'
+        +'<span class="t">'+esc(d.title)+'</span>'
+        +'<span class="m"><span data-prog="'+d.id+'"></span><span data-subt="'+d.id+'"></span></span>'
+        +'</button>';
+      days+='<section class="card" id="card-'+d.id+'">'
+        +'<div class="card-h">'
+          +'<div class="row1"><span class="day">DAY '+(i+1)+' · '+esc(d.date)+'</span><span class="sub" data-sub="'+d.id+'"></span></div>'
+          +'<h3>'+esc(d.title)+'</h3>'
+          +(d.note?'<p class="note">'+esc(d.note)+'</p>':'')
+        +'</div>'
+        +'<ul class="items">'+(d.items.length?d.items.map(itemHtml).join(''):'<li class="empty">아직 항목이 없어요. 아래에서 추가하세요.</li>')+'</ul>'
+        +'<div class="addrow"><input type="text" id="add-'+d.id+'" data-addtext="'+d.id+'" placeholder="항목 직접 추가" aria-label="'+esc(d.date)+' 항목 추가"><button class="btn" type="button" data-add="'+d.id+'">추가</button></div>'
+        +'</section>';
+    });
+    document.getElementById('strip').innerHTML=strip;
+    document.getElementById('days').innerHTML=days;
+
+    var opts=S.days.map(function(d,i){return '<option value="'+d.id+'">Day '+(i+1)+' · '+esc(d.date)+'</option>';}).join('');
+    var pool=S.pool.map(function(p){
+      return '<article class="pc">'
+        +'<h3>'+tagHtml(p.tag)+esc(p.name)+'</h3>'
+        +'<p>'+esc(p.note)+'</p>'
+        +(p.cost!=null?'<div class="est">예상 2인 A$ '+fmt(p.cost)+'</div>':'')
+        +'<div class="act"><select data-psel="'+p.id+'" aria-label="추가할 날짜">'+opts+'</select>'
+        +'<button class="btn solid" type="button" data-padd="'+p.id+'">일정에 추가</button></div>'
+        +'</article>';
+    }).join('');
+    document.getElementById('pool').innerHTML=pool||'<p class="empty">후보를 모두 일정에 넣었어요.</p>';
+
+    totals();
+  }
+
+  function totals(){
+    var total=0, spent=0, all=0, done=0;
+    S.days.forEach(function(d){
+      var sub=0, dd=0;
+      d.items.forEach(function(it){
+        var c=num(it.cost);
+        sub+=c; total+=c; all++;
+        if(it.done){spent+=c; done++; dd++;}
+      });
+      var s=document.querySelector('[data-sub="'+d.id+'"]'); if(s) s.textContent='A$ '+fmt(sub);
+      var st=document.querySelector('[data-subt="'+d.id+'"]'); if(st) st.textContent='A$ '+fmt(sub);
+      var p=document.querySelector('[data-prog="'+d.id+'"]'); if(p) p.textContent=dd+'/'+d.items.length;
+      var tile=document.getElementById('tile-'+d.id);
+      if(tile) tile.classList.toggle('done', d.items.length>0 && dd===d.items.length);
+    });
+    document.getElementById('tot').textContent='A$ '+fmt(total);
+    document.getElementById('totKrw').textContent='₩ '+fmt(total*num(S.rate));
+    document.getElementById('spent').textContent='A$ '+fmt(spent);
+    document.getElementById('progTxt').textContent=done+' / '+all+' 완료';
+    document.getElementById('progFill').style.width=(all?Math.round(done/all*100):0)+'%';
+  }
+
+  document.addEventListener('change',function(e){
+    var t=e.target, id;
+    if((id=t.getAttribute('data-check'))){
+      var f=findItem(id); if(!f) return;
+      f.item.done=t.checked;
+      var row=t.closest('.it'); if(row) row.classList.toggle('done',t.checked);
+      save(); totals();
+    }
+  });
+
+  document.addEventListener('input',function(e){
+    var t=e.target, id;
+    if((id=t.getAttribute('data-time'))){
+      var f=findItem(id); if(f){f.item.time=t.value; save();}
+    } else if((id=t.getAttribute('data-cost'))){
+      var g=findItem(id); if(g){g.item.cost=t.value===''?null:num(t.value); save(); totals();}
+    } else if(t.id==='rate'){
+      S.rate=num(t.value); save(); totals();
+    }
+  });
+
+  function addCustom(dayId){
+    var inp=document.getElementById('add-'+dayId);
+    var name=inp.value.trim(); if(!name) return;
+    var day=S.days.filter(function(d){return d.id===dayId;})[0]; if(!day) return;
+    day.items.push({id:'i'+(S.uid++),name:name,detail:'',time:'',cost:null,done:false,tag:''});
+    save(); render();
+    var again=document.getElementById('add-'+dayId); if(again) again.focus();
+  }
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      var id=e.target.getAttribute&&e.target.getAttribute('data-addtext');
+      if(id){e.preventDefault(); addCustom(id);}
+    }
+  });
+
+  var resetArmed=false, resetTimer=null;
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var v;
+    if((v=b.getAttribute('data-jump'))){
+      var el=document.getElementById('card-'+v); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    } else if((v=b.getAttribute('data-add'))){
+      addCustom(v);
+    } else if((v=b.getAttribute('data-del'))){
+      var f=findItem(v); if(f){f.day.items.splice(f.idx,1); save(); render();}
+    } else if((v=b.getAttribute('data-padd'))){
+      var pi=-1; S.pool.forEach(function(p,i){if(p.id===v) pi=i;});
+      if(pi<0) return;
+      var sel=document.querySelector('[data-psel="'+v+'"]');
+      var day=S.days.filter(function(d){return d.id===sel.value;})[0]; if(!day) return;
+      var p=S.pool.splice(pi,1)[0];
+      day.items.push({id:'i'+(S.uid++),name:p.name,detail:p.note,time:'',cost:p.cost,done:false,tag:p.tag});
+      save(); render();
+      var card=document.getElementById('card-'+day.id); if(card) card.scrollIntoView({behavior:'smooth',block:'center'});
+    } else if(b.id==='reset'){
+      if(!resetArmed){
+        resetArmed=true; b.textContent='한 번 더 누르면 모두 초기화돼요';
+        resetTimer=setTimeout(function(){resetArmed=false;b.textContent='처음 상태로 되돌리기';},4000);
+      } else {
+        clearTimeout(resetTimer); resetArmed=false;
+        S=clone(SEED); save(); render(); b.textContent='처음 상태로 되돌리기';
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
